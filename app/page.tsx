@@ -1,65 +1,101 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+
+export default function Page() {
+  const referencias = [
+    { nome: "Maracanã", valor: 0.00714, tipo: "icone" },
+    { nome: "piscina olímpica", valor: 0.00125, tipo: "objeto" },
+    { nome: "ônibus", valor: 0.00005, tipo: "objeto" },
+
+    { nome: "Niterói", valor: 133, tipo: "cidade" },
+    { nome: "Belo Horizonte", valor: 331, tipo: "cidade" },
+    { nome: "Salvador", valor: 693, tipo: "cidade" },
+    { nome: "Rio de Janeiro", valor: 1200, tipo: "cidade" },
+    { nome: "São Paulo", valor: 1521, tipo: "cidade" },
+
+    { nome: "Luxemburgo", valor: 2586, tipo: "país" },
+    { nome: "Líbano", valor: 10452, tipo: "país" },
+    { nome: "Jamaica", valor: 10991, tipo: "país" },
+
+    { nome: "Sergipe", valor: 21910, tipo: "estado" },
+    { nome: "Alagoas", valor: 27843, tipo: "estado" },
+    { nome: "Espírito Santo", valor: 46074, tipo: "estado" },
+  ];
+
+  const [valor, setValor] = useState("");
+  const [unidade, setUnidade] = useState("km2");
+
+  const calcular = () => {
+    let numero = parseFloat(valor);
+    if (!numero) return [];
+
+    if (unidade === "hectare") numero = numero / 100;
+
+    const escolherMaisProximo = (tipo: string) => {
+      return referencias
+        .filter((r) => r.tipo === tipo)
+        .sort((a, b) => Math.abs(numero - a.valor) - Math.abs(numero - b.valor))[0];
+    };
+
+    const equivalenteExato = referencias
+      .sort((a, b) => Math.abs(numero - a.valor) - Math.abs(numero - b.valor))[0];
+
+    const itens = [
+      escolherMaisProximo("estado"),
+      escolherMaisProximo("país"),
+      escolherMaisProximo("cidade"),
+      referencias.find((r) => r.nome === "piscina olímpica"),
+      referencias.find((r) => r.nome === "Maracanã"),
+      referencias.find((r) => r.nome === "ônibus"),
+      equivalenteExato,
+    ];
+
+    return itens.map((item: any) => ({
+      ...item,
+      quantidade: numero / item.valor,
+    }));
+  };
+
+  const resultado = calcular();
+
+  const formatar = (valor: number) => {
+    if (valor < 1) return `${valor * 1000000} m²`;
+    return `${valor} km²`;
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="min-h-screen bg-white p-8 flex justify-center items-center">
+      <div className="max-w-xl w-full border rounded-2xl shadow-lg p-8">
+        <h1 className="text-3xl font-bold mb-6">Quanto dá isso?</h1>
+
+        <div className="flex gap-2 mb-6">
+          <input
+            type="number"
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            className="border rounded-xl p-3 w-full"
+            placeholder="Digite uma área"
+          />
+
+          <select
+            value={unidade}
+            onChange={(e) => setUnidade(e.target.value)}
+            className="border rounded-xl p-3"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <option value="km2">km²</option>
+            <option value="hectare">hectares</option>
+          </select>
         </div>
-      </main>
+
+        <div className="space-y-3">
+          {resultado.map((item, i) => (
+            <div key={i} className="border rounded-xl p-3">
+              A área equivale a {item.quantidade.toFixed(1)} {item.nome} ({formatar(item.valor)})
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
